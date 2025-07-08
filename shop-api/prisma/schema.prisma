@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  order_id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String        @db.Uuid
+  invoice_id          String?       @db.Uuid
+  payment_id          String?       @db.Uuid
+  discountcode_id     String?       @db.Uuid
+  totalbeforediscount Decimal?      @db.Decimal(10, 2)
+  discountamount      Decimal?      @db.Decimal(10, 2)
+  totalafterdiscount  Decimal?      @db.Decimal(10, 2)
+  discountcode        discountcode? @relation(fields: [discountcode_id], references: [discountcode_id], onDelete: NoAction, onUpdate: NoAction)
+  invoice             invoice?      @relation(fields: [invoice_id], references: [invoice_id], onDelete: NoAction, onUpdate: NoAction)
+  payment             payment?      @relation(fields: [payment_id], references: [payment_id], onDelete: NoAction, onUpdate: NoAction)
+  User                User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  orderitem           orderitem[]
+}
+
+model User {
+  user_id           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  first_name        String              @db.VarChar(50)
+  last_name         String              @db.VarChar(50)
+  email             String              @unique @db.VarChar(100)
+  hash_password     String              @db.VarChar(200)
+  create_at         DateTime?           @default(now()) @db.Timestamptz(6)
+  Order             Order[]
+  address           address[]
+  cart              cart[]
+  discountcodeusage discountcodeusage[]
+  phone             phone[]
+  review            review[]
+  role              role[]
+  token             token[]
+}
+
+model address {
+  address_id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  governorate_city     String? @db.VarChar(100)
+  street               String? @db.VarChar(200)
+  building_name_number String? @db.VarChar(20)
+  apartment_number     String? @db.VarChar(10)
+  additional_details   String?
+  user_id              String  @db.Uuid
+  User                 User    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model brandtype {
+  brandtype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String    @db.VarChar(100)
+  slug         String    @unique @db.VarChar(100)
+  product      product[]
+}
+
+model cart {
+  cart_id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String        @db.Uuid
+  discountcode_id String?       @db.Uuid
+  discountcode    discountcode? @relation(fields: [discountcode_id], references: [discountcode_id], onDelete: NoAction, onUpdate: NoAction)
+  User            User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  cartitem        cartitem[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model cartitem {
+  cartitem_id       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cart_id           String         @db.Uuid
+  productvariant_id String         @db.Uuid
+  quantity          Int
+  added_at          DateTime?      @default(now()) @db.Timestamptz(6)
+  cart              cart           @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade, onUpdate: NoAction)
+  productvariant    productvariant @relation(fields: [productvariant_id], references: [productvariant_id], onUpdate: NoAction)
+
+  @@unique([cart_id, productvariant_id], map: "uc_cart_variant")
+}
+
+model categorytype {
+  categorytype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String    @db.VarChar(100)
+  slug            String    @unique @db.VarChar(100)
+  product         product[]
+}
+
+model color {
+  color_id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String           @db.VarChar(50)
+  slug           String           @unique @db.VarChar(50)
+  hexcode        String           @unique @db.VarChar(7)
+  productvariant productvariant[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model discountcode {
+  discountcode_id   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String              @unique @db.VarChar(50)
+  type              String              @db.VarChar(20)
+  value             Decimal             @db.Decimal(10, 2)
+  maxdiscountamount Decimal?            @db.Decimal(10, 2)
+  minorderamount    Decimal?            @db.Decimal(10, 2)
+  usagelimit        Int?                @default(0)
+  usagelimitperuser Int?                @default(0)
+  isactive          Boolean?            @default(true)
+  ispublic          Boolean?            @default(true)
+  startdate         DateTime?           @db.Timestamptz(6)
+  enddate           DateTime?           @db.Timestamptz(6)
+  createdat         DateTime?           @default(now()) @db.Timestamptz(6)
+  Order             Order[]
+  cart              cart[]
+  discountcodeusage discountcodeusage[]
+}
+
+model discountcodeusage {
+  discountcodeusage_id String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id              String       @db.Uuid
+  discountcode_id      String       @db.Uuid
+  discountcode         discountcode @relation(fields: [discountcode_id], references: [discountcode_id], onDelete: Cascade, onUpdate: NoAction)
+  User                 User         @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model image {
+  image_id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url            String           @db.VarChar(255)
+  alttext        String?          @db.VarChar(255)
+  isprimary      Boolean?         @default(false)
+  productvariant productvariant[]
+}
+
+model invoice {
+  invoice_id  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  totalamount Decimal?  @db.Decimal(10, 2)
+  subtotal    Decimal?  @db.Decimal(10, 2)
+  tax         Decimal?  @db.Decimal(10, 2)
+  discount    Decimal?  @db.Decimal(10, 2)
+  createdat   DateTime? @default(now()) @db.Timestamptz(6)
+  status      String?   @db.VarChar(50)
+  Order       Order[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model orderitem {
+  orderitem_id      String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantity          Int
+  unitprice         Decimal        @db.Decimal(10, 2)
+  discountperitem   Decimal?       @default(0) @db.Decimal(10, 2)
+  totalprice        Decimal        @db.Decimal(10, 2)
+  createdat         DateTime?      @default(now()) @db.Timestamptz(6)
+  productvariant_id String         @db.Uuid
+  order_id          String         @db.Uuid
+  Order             Order          @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction)
+  productvariant    productvariant @relation(fields: [productvariant_id], references: [productvariant_id], onUpdate: NoAction)
+}
+
+model payment {
+  payment_id     String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paymenttype_id String      @db.Uuid
+  amountpaid     Decimal     @db.Decimal(10, 2)
+  status         String?     @db.VarChar(50)
+  paymoborderid  String?     @db.VarChar(100)
+  transactionid  String?     @db.VarChar(100)
+  hmaxverified   Boolean?    @default(false)
+  paidat         DateTime?   @db.Timestamptz(6)
+  createdat      DateTime?   @default(now()) @db.Timestamptz(6)
+  Order          Order[]
+  paymenttype    paymenttype @relation(fields: [paymenttype_id], references: [paymenttype_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model paymenttype {
+  paymenttype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paymentname    String    @unique @db.VarChar(50)
+  isactive       Boolean?  @default(true)
+  payment        payment[]
+}
+
+model phone {
+  phone_id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phone    String @db.VarChar(20)
+  user_id  String @db.Uuid
+  User     User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model product {
+  product_id      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categorytype_id String           @db.Uuid
+  brandtype_id    String           @db.Uuid
+  producttype_id  String           @db.Uuid
+  name            String           @db.VarChar(100)
+  slug            String           @unique @db.VarChar(100)
+  description     String?
+  isactive        Boolean?         @default(true)
+  createdat       DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedat       DateTime?        @default(now()) @db.Timestamptz(6)
+  brandtype       brandtype        @relation(fields: [brandtype_id], references: [brandtype_id], onUpdate: NoAction)
+  categorytype    categorytype     @relation(fields: [categorytype_id], references: [categorytype_id], onUpdate: NoAction)
+  producttype     producttype      @relation(fields: [producttype_id], references: [producttype_id], onUpdate: NoAction)
+  productvariant  productvariant[]
+  review          review[]
+}
+
+model producttype {
+  producttype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String    @db.VarChar(100)
+  slug           String    @unique @db.VarChar(100)
+  description    String?
+  product        product[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model productvariant {
+  productvariant_id String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  price             Decimal     @db.Decimal(10, 2)
+  stock             Int
+  size_id           String      @db.Uuid
+  color_id          String      @db.Uuid
+  image_id          String      @db.Uuid
+  product_id        String      @db.Uuid
+  cartitem          cartitem[]
+  orderitem         orderitem[]
+  color             color       @relation(fields: [color_id], references: [color_id], onUpdate: NoAction)
+  image             image       @relation(fields: [image_id], references: [image_id], onDelete: SetNull, onUpdate: NoAction)
+  product           product     @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  size              size        @relation(fields: [size_id], references: [size_id], onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model review {
+  review_id  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id String    @db.Uuid
+  user_id    String    @db.Uuid
+  rating     Int
+  comment    String?
+  createdat  DateTime? @default(now()) @db.Timestamptz(6)
+  product    product   @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  User       User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, product_id], map: "uc_user_product")
+}
+
+model role {
+  role_id     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  roletype_id String   @db.Uuid
+  roletype    roletype @relation(fields: [roletype_id], references: [roletype_id], onDelete: Cascade, onUpdate: NoAction)
+  User        User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model roletype {
+  roletype_id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rolename    String @unique @db.VarChar(50)
+  role        role[]
+}
+
+model size {
+  size_id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  value          String           @unique @db.VarChar(20)
+  productvariant productvariant[]
+}
+
+model token {
+  token_id     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String    @db.Uuid
+  tokentype_id String    @db.Uuid
+  tokentype    tokentype @relation(fields: [tokentype_id], references: [tokentype_id], onDelete: Cascade, onUpdate: NoAction)
+  User         User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model tokentype {
+  tokentype_id String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token_name   String  @unique @db.VarChar(50)
+  token        token[]
+}
