@@ -3,19 +3,24 @@ import { prisma } from "../database/data";
 import { logger } from "../../utils/logger";
 import bcrypt from "bcrypt";
 import { RepositoiesHandler } from "../RepositoiesHandler";
-import { UserPhoneDto } from "../../business/dtos/userDto/UserPhoneDto";
 import { UserAddressDto } from "../../business/dtos/userDto/UserAddressDto";
+import { userCreateInput } from "../models/user/user-create.input";
+import { UserWithAddressAndPhone } from "../models/user/prismaTypes/prisma-types";
 
 class UserRepository {
     public FindUserByEmail = async (email: string) => {
         let user: User | null;
-        const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
+        const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
         try {
             logger.info("try Find User By Email ", { email: email, file: "UserRepo" });
 
             user = await prisma.user.findUnique({
                 where: {
                     email: email
+                },
+                include:{
+                    address:true,
+                    phone:true
                 }
             })
             if (user === null) {
@@ -34,8 +39,8 @@ class UserRepository {
         repoHandler.body = user;
         return repoHandler;
     }
-    public AddNewUser = async (newUser: User, phones: phone[], address: address) => {
-        const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
+    public AddNewUser = async (newUser: userCreateInput) => {
+        const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
         try {
             const result = await prisma.$transaction(async (tx) => {
                 const user = await tx.user.create({
@@ -51,18 +56,16 @@ class UserRepository {
                         },
                         phone: {
                             createMany: {
-                                data: phones.map(p => ({ phone: p.phone }))
+                                data: newUser.phone.map(p => ({ phone: p }))
                             }
                         },
                         address: {
-                            create: {
-                                apartment_number: address.apartment_number,
-                                additional_details: address.additional_details,
-                                building_name_number: address.building_name_number,
-                                governorate_city: address.governorate_city,
-                                street: address.street
-                            }
+                            create: newUser.address
                         }
+                    },
+                    include:{
+                        address:true,
+                        phone:true
                     }
                 });
                 return user;
@@ -77,6 +80,7 @@ class UserRepository {
             repoHandler.message = "try again later";
             repoHandler.body = null;
         }
+
         return repoHandler;
     }
     public FindUserById = async (userId: string) => {

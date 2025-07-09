@@ -9,10 +9,12 @@ import { ToUserDto } from "../helpers/mapper";
 import { CreateUserDto } from "../dtos/userDto/CreateUserDto";
 import { ServicesHandler } from "../ServicesHandler";
 import { RepositoiesHandler } from "../../dataAccess/RepositoiesHandler";
+import { userCreateInput } from "../../dataAccess/models/user/user-create.input";
+import { UserWithAddressAndPhone } from "../../dataAccess/models/user/prismaTypes/prisma-types";
 class UserService {
     public GetUser = async (loginUserDto: LoginUserDto) => {
         let servHandler: ServicesHandler<UserDto | null> = new ServicesHandler();
-        const repoRespons: RepositoiesHandler<User> = await userRepository.FindUserByEmail(loginUserDto.email);
+        const repoRespons: RepositoiesHandler<UserWithAddressAndPhone> = await userRepository.FindUserByEmail(loginUserDto.email);
         if (repoRespons.isSucceed === false || repoRespons.body === null) {
             logger.error("User not fount must create Account First")
             servHandler.body = null;
@@ -45,7 +47,7 @@ class UserService {
         logger.info("Login successfuly Welcom")
         servHandler.isSucceed = true;
         servHandler.message = repoRespons.message;
-        servHandler.body = ToUserDto(repoRespons.body!, jwtToken);
+        servHandler.body = ToUserDto(repoRespons.body, jwtToken);
         servHandler.refreshToken = refreshToken;
         return servHandler;
     }
@@ -53,27 +55,23 @@ class UserService {
         let servHandler: ServicesHandler<UserDto | null> = new ServicesHandler();
         logger.info("try add user", { fileName: "userServices" })
         const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
-        const user: User = {
-            user_id: "",
+        const user: userCreateInput = {
             first_name: newUser.first_name,
             last_name: newUser.last_name,
             email: newUser.email,
             hash_password: await bcrypt.hash(newUser.password, saltRounds),
-            create_at: new Date(),
-        }
-        const phones: phone[] = newUser.phone.map(p => ({ phone: p, user_id: "", phone_id: "" }))
-        const address: address = {
-            address_id: "",
-            additional_details: newUser.additional_details,
-            apartment_number: newUser.apartment_number,
-            building_name_number: newUser.building_name_number,
-            governorate_city: newUser.governorate_city,
-            street: newUser.street,
-            user_id: ""
+            address: {
+                additional_details: newUser.additional_details,
+                apartment_number: newUser.apartment_number,
+                building_name_number: newUser.building_name_number,
+                governorate_city: newUser.governorate_city,
+                street: newUser.street,
+            },
+            phone: newUser.phone
         }
 
         logger.info("Go to User Repo To Add User To Database")
-        const repoRespons: RepositoiesHandler<User> = await userRepository.AddNewUser(user, phones, address);
+        const repoRespons: RepositoiesHandler<User> = await userRepository.AddNewUser(user);
 
         if (!repoRespons.isSucceed) {
             logger.error("User Cann't Add In database", { message: repoRespons.message })
