@@ -1,4 +1,4 @@
-class ServicesHandler<T> {
+export class ServicesHandler<T> {
     message: string = "";
     isSucceed: boolean = false;
     body: T | null = null;

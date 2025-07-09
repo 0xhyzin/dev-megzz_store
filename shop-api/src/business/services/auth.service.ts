@@ -2,11 +2,13 @@ import { User } from "@prisma/client";
 import jwt from "jsonwebtoken"
 import { userRepository } from "../../dataAccess/repositories/user.repository";
 import crypto from 'crypto'
+import { logger } from "../../utils/logger";
 
 class AuthServices {
     public CreateTokenToUser = async (user: User) => {
-        const secrets: jwt.Secret = process.env.TOKEN_SECRET || ""
-        const expiresDate = process.env.TOKEN_EXPIRESIN || "11m"
+        logger.info("create jwt", { sec: process.env.TOKEN_SECRET })
+        const secrets: jwt.Secret = process.env.TOKEN_SECRET!
+        const expiresDate = process.env.TOKEN_EXPIRESIN
         const paylod: object | string = {
             id: user.user_id,
             fullName: `${user.first_name} ${user.last_name}`,
