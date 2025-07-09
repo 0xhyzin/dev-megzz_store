@@ -60,10 +60,10 @@ model brandtype {
 
 model cart {
   cart_id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id         String        @db.Uuid
+  user_id         String?        @db.Uuid
   discountcode_id String?       @db.Uuid
   discountcode    discountcode? @relation(fields: [discountcode_id], references: [discountcode_id], onDelete: NoAction, onUpdate: NoAction)
-  User            User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  User            User?          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
   cartitem        cartitem[]
 }
 

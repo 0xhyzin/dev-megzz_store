@@ -1,4 +1,4 @@
-import { phone, User } from "@prisma/client";
+import { address, phone, User } from "@prisma/client";
 import { userRepository } from "../../dataAccess/repositories/user.repository";
 import { UserDto } from "../dtos/userDto/UserDto";
 import { LoginUserDto } from "../dtos/userDto/LoginUserDto";
@@ -59,29 +59,33 @@ class UserService {
             last_name: newUser.last_name,
             email: newUser.email,
             hash_password: await bcrypt.hash(newUser.password, saltRounds),
-            create_at: new Date()
+            create_at: new Date(),
         }
-        const repoRespons: RepositoiesHandler<string> = await userRepository.AddNewUser(user);
-        const userId = repoRespons.body;
-        if (!repoRespons.isSucceed || userId === null) {
-            logger.error("some thing wrong when add user");
+        const phones: phone[] = newUser.phone.map(p => ({ phone: p, user_id: "", phone_id: "" }))
+        const address: address = {
+            address_id: "",
+            additional_details: newUser.additional_details,
+            apartment_number: newUser.apartment_number,
+            building_name_number: newUser.building_name_number,
+            governorate_city: newUser.governorate_city,
+            street: newUser.street,
+            user_id: ""
+        }
+
+        logger.info("Go to User Repo To Add User To Database")
+        const repoRespons: RepositoiesHandler<User> = await userRepository.AddNewUser(user, phones, address);
+
+        if (!repoRespons.isSucceed) {
+            logger.error("User Cann't Add In database", { message: repoRespons.message })
             servHandler.body = null;
             servHandler.isSucceed = false;
             servHandler.message = "There is an error, try again.";
             return servHandler;
         }
-        logger.info("find User By Id ", { id: userId })
-        const userAdd: User | null = (await userRepository.FindUserById(userId)).body;
-        if (userAdd === null) {
-            logger.error("user Not found", { id: userId });
-            servHandler.body = null;
-            servHandler.isSucceed = false;
-            servHandler.message = "There is an error, try again.";
-            return servHandler;
-        }
-        logger.info("Get JWT Token To User", { email: userAdd.email })
-        const jwtToken = await authServices.CreateTokenToUser(userAdd);
-        logger.info("Get Refresh Token To User", { email: userAdd.email })
+
+        logger.info("Get JWT Token To User", { email: repoRespons.body!.email })
+        const jwtToken = await authServices.CreateTokenToUser(repoRespons.body!);
+        logger.info("Get Refresh Token To User", { email: repoRespons.body!.email })
         const refreshToken = authServices.CreateRefreshToken();
 
         if (jwtToken === null || refreshToken === null) {
@@ -91,10 +95,13 @@ class UserService {
             servHandler.message = "There is an error, try again.";
             return servHandler;
         }
+
+        const userDto = ToUserDto(repoRespons.body!, jwtToken);
+
         logger.info("user add successfuly Welcom")
         servHandler.isSucceed = true;
         servHandler.message = "user add successfuly.";
-        servHandler.body = ToUserDto(userAdd, jwtToken);
+        servHandler.body = ToUserDto(repoRespons.body!, jwtToken);
         servHandler.refreshToken = refreshToken;
         return servHandler;
     }

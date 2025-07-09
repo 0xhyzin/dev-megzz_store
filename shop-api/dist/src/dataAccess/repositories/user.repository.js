@@ -42,6 +42,10 @@ class UserRepository {
             repoHandler.body = user;
             return repoHandler;
         });
+        this.AddPhoneNumberToUser = (userId, userPhones) => __awaiter(this, void 0, void 0, function* () {
+        });
+        this.AddAddressToUser = (userId, userAddress) => __awaiter(this, void 0, void 0, function* () {
+        });
         this.AddNewUser = (newUser) => __awaiter(this, void 0, void 0, function* () {
             const repoHandler = new RepositoiesHandler_1.RepositoiesHandler();
             const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
@@ -53,8 +57,13 @@ class UserRepository {
                         first_name: newUser.first_name,
                         last_name: newUser.last_name,
                         email: newUser.email,
-                        hash_password: newUser.hash_password
-                    }
+                        hash_password: newUser.hash_password,
+                        role: {
+                            connect: {
+                                roletype_id: process.env.USER_ROLE || "non"
+                            }
+                        }
+                    },
                 });
                 if (user === null) {
                     throw Error("some thing Wrong when add user in database");
@@ -70,6 +79,9 @@ class UserRepository {
                     logger_1.logger.error("Role can't add To user check env");
                     throw Error("You can't Add User");
                 }
+                //Add phone Number to Database 
+                yield this.AddPhoneNumberToUser(user.user_id);
+                //Add Address to databases
             }
             catch (er) {
                 logger_1.logger.error("you can't add user to database", { errorMessege: er });

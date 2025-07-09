@@ -1,8 +1,10 @@
-import { User } from "@prisma/client";
+import { address, phone, User } from "@prisma/client";
 import { prisma } from "../database/data";
 import { logger } from "../../utils/logger";
 import bcrypt from "bcrypt";
 import { RepositoiesHandler } from "../RepositoiesHandler";
+import { UserPhoneDto } from "../../business/dtos/userDto/UserPhoneDto";
+import { UserAddressDto } from "../../business/dtos/userDto/UserAddressDto";
 
 class UserRepository {
     public FindUserByEmail = async (email: string) => {
@@ -31,48 +33,50 @@ class UserRepository {
         repoHandler.isSucceed = true;
         repoHandler.body = user;
         return repoHandler;
-
     }
-    public AddNewUser = async (newUser: User) => {
-        const repoHandler: RepositoiesHandler<string> = new RepositoiesHandler();
-        const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
-        let user;
+    public AddNewUser = async (newUser: User, phones: phone[], address: address) => {
+        const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
         try {
-            logger.info("add User To database")
-            user = await prisma.user.create({
-                data: {
-                    first_name: newUser.first_name,
-                    last_name: newUser.last_name,
-                    email: newUser.email,
-                    hash_password: newUser.hash_password
-                }
-            })
-            if (user === null) {
-                throw Error("some thing Wrong when add user in database")
-            }
-            logger.info("try add Deffult Role To User", { Role: "User" })
-            const userRole = await prisma.role.create({
-                data: {
-                    roletype_id: process.env.USER_ROLE || "non",
-                    user_id: user.user_id,
-                }
-            })
-            if (userRole === null) {
-                logger.error("Role can't add To user check env");
-                throw Error("You can't Add User");
-            }
-
+            const result = await prisma.$transaction(async (tx) => {
+                const user = await tx.user.create({
+                    data: {
+                        first_name: newUser.first_name,
+                        last_name: newUser.last_name,
+                        email: newUser.email,
+                        hash_password: newUser.hash_password,
+                        role: {
+                            create: {
+                                roletype_id: process.env.USER_ROLE || 'default'
+                            }
+                        },
+                        phone: {
+                            createMany: {
+                                data: phones.map(p => ({ phone: p.phone }))
+                            }
+                        },
+                        address: {
+                            create: {
+                                apartment_number: address.apartment_number,
+                                additional_details: address.additional_details,
+                                building_name_number: address.building_name_number,
+                                governorate_city: address.governorate_city,
+                                street: address.street
+                            }
+                        }
+                    }
+                });
+                return user;
+            });
+            logger.info('User created with all related data:', result);
+            repoHandler.message = "welcome";
+            repoHandler.isSucceed = true;
+            repoHandler.body = result;
         } catch (er) {
-            logger.error("you can't add user to database", { errorMessege: er });
-            repoHandler.message = "some thing Wrong";
+            logger.error("Error when adding user data", { error: er });
             repoHandler.isSucceed = false;
+            repoHandler.message = "try again later";
             repoHandler.body = null;
-            return repoHandler;
         }
-        logger.info("User Added Succssfuly");
-        repoHandler.message = "welcome";
-        repoHandler.isSucceed = true;
-        repoHandler.body = user.user_id;
         return repoHandler;
     }
     public FindUserById = async (userId: string) => {
@@ -103,7 +107,7 @@ class UserRepository {
 
     }
     public GetUserRole = async (userId: string) => {
-        logger.info("try Get User Roles",{userId:userId});
+        logger.info("try Get User Roles", { userId: userId });
         let roles;
         try {
             roles = await prisma.role.findMany({

@@ -40,9 +40,9 @@ class UserController {
                 email: email,
                 password: password
             };
-            const servRespons = yield user_service_1.userService.addUser(createUserDto);
+            const servRespons = yield user_service_1.userService.GetUser(createUserDto);
             if (!servRespons.isSucceed || servRespons.refreshToken === null) {
-                logger_1.logger.error("create User faild");
+                logger_1.logger.error("create Account faild");
                 res.status(400).send({ message: servRespons.message });
             }
             res.cookie("refreshTocken", servRespons.refreshToken, {

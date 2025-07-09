@@ -7,5 +7,3 @@ const uservalidation_1 = require("../middlewares/uservalidation");
 exports.userRouts = (0, express_1.Router)();
 exports.userRouts.post('/login', uservalidation_1.ValidationLoginUser, user_controller_1.userController.LoginUser);
 exports.userRouts.post('/createaccount', user_controller_1.userController.CreatNewAccount);
-exports.userRouts.post("/addphon", user_controller_1.userController.AddPhonNumberToUser);
-exports.userRouts.post("/addadress", user_controller_1.userController.AddAdressToUser);

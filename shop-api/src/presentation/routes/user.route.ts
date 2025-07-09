@@ -6,5 +6,3 @@ export const userRouts :Router = Router();
 
 userRouts.post('/login',ValidationLoginUser,userController.LoginUser);
 userRouts.post('/createaccount',userController.CreatNewAccount);
-userRouts.post("/addphon",userController.AddPhonNumberToUser)
-userRouts.post("/addadress",userController.AddAdressToUser)
