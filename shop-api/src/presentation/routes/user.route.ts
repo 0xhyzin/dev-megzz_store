@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { userController } from "../controllers/user.controller";
-import { ValidationLoginUser } from "../middlewares/uservalidation";
+import { createUserValidation, ValidationLoginUser } from "../middlewares/uservalidation";
+import { validateRequest } from "../middlewares/validateRequest";
 
-export const userRouts :Router = Router();
+export const userRouts: Router = Router();
 
-userRouts.post('/login',ValidationLoginUser,userController.LoginUser);
-userRouts.post('/createaccount',userController.CreatNewAccount);
+userRouts.post('/login', ValidationLoginUser, validateRequest, userController.LoginUser);
+userRouts.post('/createaccount', createUserValidation, validateRequest, userController.CreatNewAccount);

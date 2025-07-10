@@ -69,15 +69,8 @@ class UserService {
                 first_name: newUser.first_name,
                 last_name: newUser.last_name,
                 email: newUser.email,
-                hash_password: yield bcrypt_1.default.hash(newUser.password, saltRounds),
-                address: {
-                    additional_details: newUser.address.additional_details,
-                    apartment_number: newUser.address.apartment_number,
-                    building_name_number: newUser.address.building_name_number,
-                    governorate_city: newUser.address.governorate_city,
-                    street: newUser.address.street,
-                },
-                phone: newUser.phone
+                phone: newUser.phone,
+                hash_password: yield bcrypt_1.default.hash(newUser.password, saltRounds)
             };
             logger_1.logger.info("Go to User Repo To Add User To Database");
             const repoRespons = yield user_repository_1.userRepository.AddNewUser(user);

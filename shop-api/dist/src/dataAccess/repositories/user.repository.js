@@ -24,10 +24,6 @@ class UserRepository {
                     where: {
                         email: email
                     },
-                    include: {
-                        address: true,
-                        phone: true
-                    }
                 });
                 if (user === null) {
                     throw Error("There is no user with this email");
@@ -49,38 +45,25 @@ class UserRepository {
         this.AddNewUser = (newUser) => __awaiter(this, void 0, void 0, function* () {
             const repoHandler = new RepositoiesHandler_1.RepositoiesHandler();
             try {
-                const result = yield data_1.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                    const user = yield tx.user.create({
-                        data: {
-                            first_name: newUser.first_name,
-                            last_name: newUser.last_name,
-                            email: newUser.email,
-                            hash_password: newUser.hash_password,
-                            role: {
-                                create: {
-                                    roletype_id: process.env.USER_ROLE || 'default'
-                                }
-                            },
-                            phone: {
-                                createMany: {
-                                    data: newUser.phone.map(p => ({ phone: p }))
-                                }
-                            },
-                            address: {
-                                create: newUser.address
+                logger_1.logger.info("Add User in Database", { userRole: process.env.USER_ROLE });
+                const user = yield data_1.prisma.user.create({
+                    data: {
+                        first_name: newUser.first_name,
+                        last_name: newUser.last_name,
+                        email: newUser.email,
+                        phone: newUser.phone,
+                        hash_password: newUser.hash_password,
+                        role: {
+                            create: {
+                                roletype_id: process.env.USER_ROLE
                             }
                         },
-                        include: {
-                            address: true,
-                            phone: true
-                        }
-                    });
-                    return user;
-                }));
-                logger_1.logger.info('User created with all related data:', result);
+                    }
+                });
+                logger_1.logger.info('User created with all related data:', user);
                 repoHandler.message = "welcome";
                 repoHandler.isSucceed = true;
-                repoHandler.body = result;
+                repoHandler.body = user;
             }
             catch (er) {
                 logger_1.logger.error("Error when adding user data", { error: er });

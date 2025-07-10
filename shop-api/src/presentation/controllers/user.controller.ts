@@ -28,22 +28,13 @@ class UserController {
 
     }
     public CreatNewAccount = async (req: Request, res: Response) => {
-        const { firstName, lastName, email, password, phone, additionalDetails, apartmentNumber, buildingNameNumber,
-            governorateCity, street
-        } = req.body;
+        const { firstName, lastName, email, phone, password } = req.body;
         const createUserDto: CreateUserDto = {
             first_name: firstName,
             last_name: lastName,
             email: email,
             password: password,
             phone: phone,
-            address: {
-                additional_details: additionalDetails,
-                apartment_number: apartmentNumber,
-                building_name_number: buildingNameNumber,
-                governorate_city: governorateCity,
-                street: street,
-            }
         }
         const servRespons: ServicesHandler<UserDto | null> = await userService.addUser(createUserDto);
         if (!servRespons.isSucceed || servRespons.refreshToken === null) {

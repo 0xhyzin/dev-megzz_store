@@ -1,4 +1,4 @@
-import { address, phone, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { userRepository } from "../../dataAccess/repositories/user.repository";
 import { UserDto } from "../dtos/userDto/UserDto";
 import { LoginUserDto } from "../dtos/userDto/LoginUserDto";
@@ -10,13 +10,12 @@ import { CreateUserDto } from "../dtos/userDto/CreateUserDto";
 import { ServicesHandler } from "../ServicesHandler";
 import { RepositoiesHandler } from "../../dataAccess/RepositoiesHandler";
 import { userCreateInput } from "../../dataAccess/models/user/user-create.input";
-import { UserWithAddressAndPhone } from "../../dataAccess/models/user/prismaTypes/prisma-types";
 class UserService {
     public GetUser = async (loginUserDto: LoginUserDto) => {
         let servHandler: ServicesHandler<UserDto | null> = new ServicesHandler();
 
         logger.info("Get User By Email", { fileName: "User Service" });
-        const repoRespons: RepositoiesHandler<UserWithAddressAndPhone> = await userRepository.FindUserByEmail(loginUserDto.email);
+        const repoRespons: RepositoiesHandler<User> = await userRepository.FindUserByEmail(loginUserDto.email);
 
         if (repoRespons.isSucceed === false || repoRespons.body === null) {
             logger.error("User not fount must create Account First")
@@ -67,19 +66,12 @@ class UserService {
             first_name: newUser.first_name,
             last_name: newUser.last_name,
             email: newUser.email,
-            hash_password: await bcrypt.hash(newUser.password, saltRounds),
-            address: {
-                additional_details: newUser.address.additional_details,
-                apartment_number: newUser.address.apartment_number,
-                building_name_number: newUser.address.building_name_number,
-                governorate_city: newUser.address.governorate_city,
-                street: newUser.address.street,
-            },
-            phone: newUser.phone
+            phone: newUser.phone,
+            hash_password: await bcrypt.hash(newUser.password, saltRounds)
         }
 
         logger.info("Go to User Repo To Add User To Database")
-        const repoRespons: RepositoiesHandler<UserWithAddressAndPhone> = await userRepository.AddNewUser(user);
+        const repoRespons: RepositoiesHandler<User> = await userRepository.AddNewUser(user);
 
         if (!repoRespons.isSucceed) {
             logger.error("User Cann't Add In database", { message: repoRespons.message })
@@ -91,6 +83,7 @@ class UserService {
 
         logger.info("Get JWT Token To User", { email: repoRespons.body!.email })
         const jwtToken = await authServices.CreateTokenToUser(repoRespons.body!);
+
         logger.info("Get Refresh Token To User", { email: repoRespons.body!.email })
         const refreshToken = authServices.CreateRefreshToken();
 

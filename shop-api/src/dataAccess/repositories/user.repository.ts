@@ -1,15 +1,14 @@
-import { address, phone, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { prisma } from "../database/data";
 import { logger } from "../../utils/logger";
 import bcrypt from "bcrypt";
 import { RepositoiesHandler } from "../RepositoiesHandler";
 import { userCreateInput } from "../models/user/user-create.input";
-import { UserWithAddressAndPhone } from "../models/user/prismaTypes/prisma-types";
 
 class UserRepository {
     public FindUserByEmail = async (email: string) => {
-        let user: UserWithAddressAndPhone | null;
-        const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
+        let user: User | null;
+        const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
         try {
             logger.info("try Find User By Email ", { email: email, file: "UserRepo" });
 
@@ -17,10 +16,6 @@ class UserRepository {
                 where: {
                     email: email
                 },
-                include: {
-                    address: true,
-                    phone: true
-                }
             })
             if (user === null) {
                 throw Error("There is no user with this email");
@@ -39,40 +34,27 @@ class UserRepository {
         return repoHandler;
     }
     public AddNewUser = async (newUser: userCreateInput) => {
-        const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
+        const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
         try {
-            const result = await prisma.$transaction(async (tx) => {
-                const user :UserWithAddressAndPhone = await tx.user.create({
-                    data: {
-                        first_name: newUser.first_name,
-                        last_name: newUser.last_name,
-                        email: newUser.email,
-                        hash_password: newUser.hash_password,
-                        role: {
-                            create: {
-                                roletype_id: process.env.USER_ROLE || 'default'
-                            }
-                        },
-                        phone: {
-                            createMany: {
-                                data: newUser.phone.map(p => ({ phone: p }))
-                            }
-                        },
-                        address: {
-                            create: newUser.address
+            logger.info("Add User in Database", { userRole: process.env.USER_ROLE });
+            const user: User = await prisma.user.create({
+                data: {
+                    first_name: newUser.first_name,
+                    last_name: newUser.last_name,
+                    email: newUser.email,
+                    phone: newUser.phone,
+                    hash_password: newUser.hash_password,
+                    role: {
+                        create: {
+                            roletype_id: process.env.USER_ROLE!
                         }
                     },
-                    include: {
-                        address: true,
-                        phone: true
-                    }
-                });
-                return user;
-            });
-            logger.info('User created with all related data:', result);
+                }
+            })
+            logger.info('User created with all related data:', user);
             repoHandler.message = "welcome";
             repoHandler.isSucceed = true;
-            repoHandler.body = result;
+            repoHandler.body = user;
         } catch (er) {
             logger.error("Error when adding user data", { error: er });
             repoHandler.isSucceed = false;

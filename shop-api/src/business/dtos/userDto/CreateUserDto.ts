@@ -2,15 +2,6 @@ export type CreateUserDto = {
   first_name: string;
   last_name: string;
   email: string;
+  phone: string;
   password: string;
-
-  phone: string[];
-
-  address: {
-    governorate_city: string;
-    street: string;
-    building_name_number: string;
-    apartment_number: string;
-    additional_details: string;
-  };
 }
