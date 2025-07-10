@@ -3,13 +3,12 @@ import { prisma } from "../database/data";
 import { logger } from "../../utils/logger";
 import bcrypt from "bcrypt";
 import { RepositoiesHandler } from "../RepositoiesHandler";
-import { UserAddressDto } from "../../business/dtos/userDto/UserAddressDto";
 import { userCreateInput } from "../models/user/user-create.input";
 import { UserWithAddressAndPhone } from "../models/user/prismaTypes/prisma-types";
 
 class UserRepository {
     public FindUserByEmail = async (email: string) => {
-        let user: User | null;
+        let user: UserWithAddressAndPhone | null;
         const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
         try {
             logger.info("try Find User By Email ", { email: email, file: "UserRepo" });
@@ -18,9 +17,9 @@ class UserRepository {
                 where: {
                     email: email
                 },
-                include:{
-                    address:true,
-                    phone:true
+                include: {
+                    address: true,
+                    phone: true
                 }
             })
             if (user === null) {
@@ -43,7 +42,7 @@ class UserRepository {
         const repoHandler: RepositoiesHandler<UserWithAddressAndPhone> = new RepositoiesHandler();
         try {
             const result = await prisma.$transaction(async (tx) => {
-                const user = await tx.user.create({
+                const user :UserWithAddressAndPhone = await tx.user.create({
                     data: {
                         first_name: newUser.first_name,
                         last_name: newUser.last_name,
@@ -63,9 +62,9 @@ class UserRepository {
                             create: newUser.address
                         }
                     },
-                    include:{
-                        address:true,
-                        phone:true
+                    include: {
+                        address: true,
+                        phone: true
                     }
                 });
                 return user;

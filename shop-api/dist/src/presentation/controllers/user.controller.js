@@ -33,14 +33,22 @@ class UserController {
             }).status(200).send({ message: servRespons.message, user: servRespons.body });
         });
         this.CreatNewAccount = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const { firstName, lastName, email, password } = req.body;
+            const { firstName, lastName, email, password, phone, additionalDetails, apartmentNumber, buildingNameNumber, governorateCity, street } = req.body;
             const createUserDto = {
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
-                password: password
+                password: password,
+                phone: phone,
+                address: {
+                    additional_details: additionalDetails,
+                    apartment_number: apartmentNumber,
+                    building_name_number: buildingNameNumber,
+                    governorate_city: governorateCity,
+                    street: street,
+                }
             };
-            const servRespons = yield user_service_1.userService.GetUser(createUserDto);
+            const servRespons = yield user_service_1.userService.addUser(createUserDto);
             if (!servRespons.isSucceed || servRespons.refreshToken === null) {
                 logger_1.logger.error("create Account faild");
                 res.status(400).send({ message: servRespons.message });

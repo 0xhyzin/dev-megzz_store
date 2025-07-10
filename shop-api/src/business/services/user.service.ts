@@ -14,7 +14,10 @@ import { UserWithAddressAndPhone } from "../../dataAccess/models/user/prismaType
 class UserService {
     public GetUser = async (loginUserDto: LoginUserDto) => {
         let servHandler: ServicesHandler<UserDto | null> = new ServicesHandler();
+
+        logger.info("Get User By Email", { fileName: "User Service" });
         const repoRespons: RepositoiesHandler<UserWithAddressAndPhone> = await userRepository.FindUserByEmail(loginUserDto.email);
+
         if (repoRespons.isSucceed === false || repoRespons.body === null) {
             logger.error("User not fount must create Account First")
             servHandler.body = null;
@@ -22,6 +25,8 @@ class UserService {
             servHandler.message = repoRespons.message;
             return servHandler;
         }
+
+        logger.info("check user Password", { fileName: "User Service" });
         const hashPassword = repoRespons.body?.hash_password;
         const isPasswordCorrect: boolean = await bcrypt.compare(loginUserDto.password, hashPassword!)
         if (!isPasswordCorrect) {
@@ -31,6 +36,8 @@ class UserService {
             servHandler.message = "There is an error, try again.";
             return servHandler;
         }
+
+
         logger.info("Get JWT Token To User", { email: repoRespons.body?.email })
         const jwtToken = await authServices.CreateTokenToUser(repoRespons.body!);
         logger.info("Get Refresh Token To User", { email: repoRespons.body?.email })
@@ -53,7 +60,8 @@ class UserService {
     }
     public addUser = async (newUser: CreateUserDto) => {
         let servHandler: ServicesHandler<UserDto | null> = new ServicesHandler();
-        logger.info("try add user", { fileName: "userServices" })
+        logger.info("try add user and hash password", { fileName: "userServices" })
+
         const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
         const user: userCreateInput = {
             first_name: newUser.first_name,
@@ -61,17 +69,17 @@ class UserService {
             email: newUser.email,
             hash_password: await bcrypt.hash(newUser.password, saltRounds),
             address: {
-                additional_details: newUser.additional_details,
-                apartment_number: newUser.apartment_number,
-                building_name_number: newUser.building_name_number,
-                governorate_city: newUser.governorate_city,
-                street: newUser.street,
+                additional_details: newUser.address.additional_details,
+                apartment_number: newUser.address.apartment_number,
+                building_name_number: newUser.address.building_name_number,
+                governorate_city: newUser.address.governorate_city,
+                street: newUser.address.street,
             },
             phone: newUser.phone
         }
 
         logger.info("Go to User Repo To Add User To Database")
-        const repoRespons: RepositoiesHandler<User> = await userRepository.AddNewUser(user);
+        const repoRespons: RepositoiesHandler<UserWithAddressAndPhone> = await userRepository.AddNewUser(user);
 
         if (!repoRespons.isSucceed) {
             logger.error("User Cann't Add In database", { message: repoRespons.message })
@@ -94,12 +102,13 @@ class UserService {
             return servHandler;
         }
 
+        logger.info("Convert User With Address And Phone to User Dto", { fileName: "User Service" });
         const userDto = ToUserDto(repoRespons.body!, jwtToken);
 
         logger.info("user add successfuly Welcom")
         servHandler.isSucceed = true;
         servHandler.message = "user add successfuly.";
-        servHandler.body = ToUserDto(repoRespons.body!, jwtToken);
+        servHandler.body = userDto
         servHandler.refreshToken = refreshToken;
         return servHandler;
     }

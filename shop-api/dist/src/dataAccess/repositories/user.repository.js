@@ -23,6 +23,10 @@ class UserRepository {
                 user = yield data_1.prisma.user.findUnique({
                     where: {
                         email: email
+                    },
+                    include: {
+                        address: true,
+                        phone: true
                     }
                 });
                 if (user === null) {
@@ -42,58 +46,48 @@ class UserRepository {
             repoHandler.body = user;
             return repoHandler;
         });
-        this.AddPhoneNumberToUser = (userId, userPhones) => __awaiter(this, void 0, void 0, function* () {
-        });
-        this.AddAddressToUser = (userId, userAddress) => __awaiter(this, void 0, void 0, function* () {
-        });
         this.AddNewUser = (newUser) => __awaiter(this, void 0, void 0, function* () {
             const repoHandler = new RepositoiesHandler_1.RepositoiesHandler();
-            const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
-            let user;
             try {
-                logger_1.logger.info("add User To database");
-                user = yield data_1.prisma.user.create({
-                    data: {
-                        first_name: newUser.first_name,
-                        last_name: newUser.last_name,
-                        email: newUser.email,
-                        hash_password: newUser.hash_password,
-                        role: {
-                            connect: {
-                                roletype_id: process.env.USER_ROLE || "non"
+                const result = yield data_1.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    const user = yield tx.user.create({
+                        data: {
+                            first_name: newUser.first_name,
+                            last_name: newUser.last_name,
+                            email: newUser.email,
+                            hash_password: newUser.hash_password,
+                            role: {
+                                create: {
+                                    roletype_id: process.env.USER_ROLE || 'default'
+                                }
+                            },
+                            phone: {
+                                createMany: {
+                                    data: newUser.phone.map(p => ({ phone: p }))
+                                }
+                            },
+                            address: {
+                                create: newUser.address
                             }
+                        },
+                        include: {
+                            address: true,
+                            phone: true
                         }
-                    },
-                });
-                if (user === null) {
-                    throw Error("some thing Wrong when add user in database");
-                }
-                logger_1.logger.info("try add Deffult Role To User", { Role: "User" });
-                const userRole = yield data_1.prisma.role.create({
-                    data: {
-                        roletype_id: process.env.USER_ROLE || "non",
-                        user_id: user.user_id,
-                    }
-                });
-                if (userRole === null) {
-                    logger_1.logger.error("Role can't add To user check env");
-                    throw Error("You can't Add User");
-                }
-                //Add phone Number to Database 
-                yield this.AddPhoneNumberToUser(user.user_id);
-                //Add Address to databases
+                    });
+                    return user;
+                }));
+                logger_1.logger.info('User created with all related data:', result);
+                repoHandler.message = "welcome";
+                repoHandler.isSucceed = true;
+                repoHandler.body = result;
             }
             catch (er) {
-                logger_1.logger.error("you can't add user to database", { errorMessege: er });
-                repoHandler.message = "some thing Wrong";
+                logger_1.logger.error("Error when adding user data", { error: er });
                 repoHandler.isSucceed = false;
+                repoHandler.message = "try again later";
                 repoHandler.body = null;
-                return repoHandler;
             }
-            logger_1.logger.info("User Added Succssfuly");
-            repoHandler.message = "welcome";
-            repoHandler.isSucceed = true;
-            repoHandler.body = user.user_id;
             return repoHandler;
         });
         this.FindUserById = (userId) => __awaiter(this, void 0, void 0, function* () {

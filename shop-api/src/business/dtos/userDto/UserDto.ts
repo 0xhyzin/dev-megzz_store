@@ -1,9 +1,15 @@
-import { UserAddressDto } from "./UserAddressDto";
+
 
 export type UserDto = {
     fullName: string;
     email: string;
-    token: string;
-    address: UserAddressDto;
     phones: string[];
+    address: {
+        governorate_city: string;
+        street: string;
+        building_name_number: string;
+        apartment_number: string;
+        additional_details: string;
+    };
+    token: string;
 }

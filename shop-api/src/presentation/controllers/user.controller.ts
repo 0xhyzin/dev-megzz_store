@@ -28,14 +28,24 @@ class UserController {
 
     }
     public CreatNewAccount = async (req: Request, res: Response) => {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password, phone, additionalDetails, apartmentNumber, buildingNameNumber,
+            governorateCity, street
+        } = req.body;
         const createUserDto: CreateUserDto = {
             first_name: firstName,
             last_name: lastName,
             email: email,
-            password: password
+            password: password,
+            phone: phone,
+            address: {
+                additional_details: additionalDetails,
+                apartment_number: apartmentNumber,
+                building_name_number: buildingNameNumber,
+                governorate_city: governorateCity,
+                street: street,
+            }
         }
-        const servRespons: ServicesHandler<UserDto | null> = await userService.GetUser(createUserDto);
+        const servRespons: ServicesHandler<UserDto | null> = await userService.addUser(createUserDto);
         if (!servRespons.isSucceed || servRespons.refreshToken === null) {
             logger.error("create Account faild");
             res.status(400).send({ message: servRespons.message });

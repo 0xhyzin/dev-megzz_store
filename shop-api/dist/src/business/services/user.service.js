@@ -24,6 +24,7 @@ class UserService {
         this.GetUser = (loginUserDto) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
             let servHandler = new ServicesHandler_1.ServicesHandler();
+            logger_1.logger.info("Get User By Email", { fileName: "User Service" });
             const repoRespons = yield user_repository_1.userRepository.FindUserByEmail(loginUserDto.email);
             if (repoRespons.isSucceed === false || repoRespons.body === null) {
                 logger_1.logger.error("User not fount must create Account First");
@@ -32,6 +33,7 @@ class UserService {
                 servHandler.message = repoRespons.message;
                 return servHandler;
             }
+            logger_1.logger.info("check user Password", { fileName: "User Service" });
             const hashPassword = (_a = repoRespons.body) === null || _a === void 0 ? void 0 : _a.hash_password;
             const isPasswordCorrect = yield bcrypt_1.default.compare(loginUserDto.password, hashPassword);
             if (!isPasswordCorrect) {
@@ -61,37 +63,34 @@ class UserService {
         });
         this.addUser = (newUser) => __awaiter(this, void 0, void 0, function* () {
             let servHandler = new ServicesHandler_1.ServicesHandler();
-            logger_1.logger.info("try add user", { fileName: "userServices" });
+            logger_1.logger.info("try add user and hash password", { fileName: "userServices" });
             const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
             const user = {
-                user_id: "",
                 first_name: newUser.first_name,
                 last_name: newUser.last_name,
                 email: newUser.email,
                 hash_password: yield bcrypt_1.default.hash(newUser.password, saltRounds),
-                create_at: new Date()
+                address: {
+                    additional_details: newUser.address.additional_details,
+                    apartment_number: newUser.address.apartment_number,
+                    building_name_number: newUser.address.building_name_number,
+                    governorate_city: newUser.address.governorate_city,
+                    street: newUser.address.street,
+                },
+                phone: newUser.phone
             };
+            logger_1.logger.info("Go to User Repo To Add User To Database");
             const repoRespons = yield user_repository_1.userRepository.AddNewUser(user);
-            const userId = repoRespons.body;
-            if (!repoRespons.isSucceed || userId === null) {
-                logger_1.logger.error("some thing wrong when add user");
+            if (!repoRespons.isSucceed) {
+                logger_1.logger.error("User Cann't Add In database", { message: repoRespons.message });
                 servHandler.body = null;
                 servHandler.isSucceed = false;
                 servHandler.message = "There is an error, try again.";
                 return servHandler;
             }
-            logger_1.logger.info("find User By Id ", { id: userId });
-            const userAdd = (yield user_repository_1.userRepository.FindUserById(userId)).body;
-            if (userAdd === null) {
-                logger_1.logger.error("user Not found", { id: userId });
-                servHandler.body = null;
-                servHandler.isSucceed = false;
-                servHandler.message = "There is an error, try again.";
-                return servHandler;
-            }
-            logger_1.logger.info("Get JWT Token To User", { email: userAdd.email });
-            const jwtToken = yield auth_service_1.authServices.CreateTokenToUser(userAdd);
-            logger_1.logger.info("Get Refresh Token To User", { email: userAdd.email });
+            logger_1.logger.info("Get JWT Token To User", { email: repoRespons.body.email });
+            const jwtToken = yield auth_service_1.authServices.CreateTokenToUser(repoRespons.body);
+            logger_1.logger.info("Get Refresh Token To User", { email: repoRespons.body.email });
             const refreshToken = auth_service_1.authServices.CreateRefreshToken();
             if (jwtToken === null || refreshToken === null) {
                 logger_1.logger.error("Error When create Jwt or RefreshToken");
@@ -100,10 +99,12 @@ class UserService {
                 servHandler.message = "There is an error, try again.";
                 return servHandler;
             }
+            logger_1.logger.info("Convert User With Address And Phone to User Dto", { fileName: "User Service" });
+            const userDto = (0, mapper_1.ToUserDto)(repoRespons.body, jwtToken);
             logger_1.logger.info("user add successfuly Welcom");
             servHandler.isSucceed = true;
             servHandler.message = "user add successfuly.";
-            servHandler.body = (0, mapper_1.ToUserDto)(userAdd, jwtToken);
+            servHandler.body = userDto;
             servHandler.refreshToken = refreshToken;
             return servHandler;
         });
