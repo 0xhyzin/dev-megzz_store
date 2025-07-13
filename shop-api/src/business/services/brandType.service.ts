@@ -6,11 +6,11 @@ import { DeleteImageInSupabase, SaveImageInSupabase } from "../helpers/supperbas
 import { ServicesHandler } from "../ServicesHandler";
 import { RepositoiesHandler } from "../../dataAccess/RepositoiesHandler";
 import { brandtype } from "@prisma/client";
-import { productRepository } from "../../dataAccess/repositories/brand.repository";
-import { BrandTypeCreateInput } from "../../dataAccess/models/product/brandType-create.input";
+import { brandTypeRepository } from "../../dataAccess/repositories/brand.repository";
+import { BrandTypeCreateInput } from "../../dataAccess/models/product/brandType-create.input copy"; 
 import { UpdateBrandTypeDto } from "../dtos/productDto/BrandType/UpdateBrandTypeDto";
 
-class ProductServices {
+class BrandTypeServices {
     public AddBrandType = async (newBrand: AddBrandTypeDto) => {
         let servHandler: ServicesHandler<BrandTypeDto | null> = new ServicesHandler();
         logger.info("Try add Brand type in product services");
@@ -43,7 +43,7 @@ class ProductServices {
         }
 
         logger.info("add Brand To database", { image: image_input });
-        const repoRespons: RepositoiesHandler<brandtype | null> = await productRepository.AddBrandTypeToDatabase(image_input);
+        const repoRespons: RepositoiesHandler<brandtype | null> = await brandTypeRepository.AddBrandTypeToDatabase(image_input);
         if (!repoRespons.isSucceed) {
             logger.error("brand Cann't Add In database", { message: repoRespons.message })
             servHandler.body = null;
@@ -73,7 +73,7 @@ class ProductServices {
 
         logger.info("get Brand By Id", { BrandId: id })
 
-        const brand: brandtype | null = await productRepository.GetBrandById(id);
+        const brand: brandtype | null = await brandTypeRepository.GetBrandById(id);
         if (brand === null) {
             logger.error("brand Cann't Add In database", { message: "Brand Not Found" })
             servHandler.body = null;
@@ -127,7 +127,7 @@ class ProductServices {
         }
 
         logger.info("add Brand To database", { image: image_input });
-        const repoRespons: RepositoiesHandler<brandtype | null> = await productRepository.UpdateBrandTypeToDatabase(image_input);
+        const repoRespons: RepositoiesHandler<brandtype | null> = await brandTypeRepository.UpdateBrandTypeToDatabase(image_input);
         if (!repoRespons.isSucceed) {
             logger.error("brand Cann't Update In database", { message: repoRespons.message })
             servHandler.body = null;
@@ -156,7 +156,7 @@ class ProductServices {
 
         logger.info("get Brand By Id", { BrandId: id })
 
-        const brand: brandtype | null = await productRepository.GetBrandById(id);
+        const brand: brandtype | null = await brandTypeRepository.GetBrandById(id);
         if (brand === null) {
             logger.error("brand Cann't Add In database", { message: "Brand Not Found" })
             servHandler.body = null;
@@ -178,7 +178,7 @@ class ProductServices {
 
         logger.info("delete image From database");
 
-        const isDeleted: boolean = await productRepository.DeleteBrandTypeFromDatabase(id);
+        const isDeleted: boolean = await brandTypeRepository.DeleteBrandTypeFromDatabase(id);
 
         if (!isDeleted) {
             logger.error("You Can't Delete This Image", { error: reuslt.error })
@@ -203,7 +203,7 @@ class ProductServices {
 
         logger.info("get All brand Types")
 
-        const brands: brandtype[] | null = await productRepository.GetBrandTypes();
+        const brands: brandtype[] | null = await brandTypeRepository.GetBrandTypes();
         if (brands === null) {
             logger.error("brand Cann't Add In database", { message: "Brand Not Found" })
             servHandler.body = null;
@@ -230,7 +230,7 @@ class ProductServices {
 
         logger.info("get Brand By Id", { BrandId: id })
 
-        const brand: brandtype | null = await productRepository.GetBrandById(id);
+        const brand: brandtype | null = await brandTypeRepository.GetBrandById(id);
         if (brand === null) {
             logger.error("brand Cann't Add In database", { message: "Brand Not Found" })
             servHandler.body = null;
@@ -252,4 +252,4 @@ class ProductServices {
         return servHandler;
     }
 }
-export const productServices: ProductServices = new ProductServices();
+export const brandTypeServices: BrandTypeServices = new BrandTypeServices();

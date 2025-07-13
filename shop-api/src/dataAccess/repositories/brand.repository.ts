@@ -1,10 +1,10 @@
 import { logger } from "../../utils/logger";
 import { prisma } from "../database/data";
-import { BrandTypeCreateInput } from "../models/product/brandType-create.input";
+import { BrandTypeCreateInput } from "../models/product/brandType-create.input copy";
 import { brandtype } from "@prisma/client";
 import { RepositoiesHandler } from "../RepositoiesHandler";
 
-class ProductRepository {
+class BrandTypeRepository {
     public AddBrandTypeToDatabase = async (newBrand: BrandTypeCreateInput) => {
         let repoHandler: RepositoiesHandler<brandtype> = new RepositoiesHandler();
         try {
@@ -121,4 +121,4 @@ class ProductRepository {
     }
 
 }
-export const productRepository: ProductRepository = new ProductRepository();
+export const brandTypeRepository: BrandTypeRepository = new BrandTypeRepository();
