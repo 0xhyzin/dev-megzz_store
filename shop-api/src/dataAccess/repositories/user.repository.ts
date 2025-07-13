@@ -36,7 +36,7 @@ class UserRepository {
     public AddNewUser = async (newUser: userCreateInput) => {
         const repoHandler: RepositoiesHandler<User> = new RepositoiesHandler();
         try {
-            logger.info("Add User in Database", { userRole: process.env.USER_ROLE });
+            logger.info("Add User in Database", { userRole: process.env.ADMIN_ROLE });
             const user: User = await prisma.user.create({
                 data: {
                     first_name: newUser.first_name,
@@ -46,7 +46,7 @@ class UserRepository {
                     hash_password: newUser.hash_password,
                     role: {
                         create: {
-                            roletype_id: process.env.USER_ROLE!
+                            roletype_id: process.env.ADMIN_ROLE!
                         }
                     },
                 }

@@ -1,5 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userRouts = void 0;
+exports.brandRoutes = void 0;
 const express_1 = require("express");
-exports.userRouts = (0, express_1.Router)();
+const prouduct_controller_1 = require("../controllers/prouduct.controller");
+const multer_1 = require("../../business/helpers/multer");
+exports.brandRoutes = (0, express_1.Router)();
+exports.brandRoutes.post('/', multer_1.upload.single('image'), prouduct_controller_1.productController.AddBrandType);
+exports.brandRoutes.put('/:id', multer_1.upload.single('image'), prouduct_controller_1.productController.UpdateBrandType);
+exports.brandRoutes.delete('/:id', prouduct_controller_1.productController.DeleteBrandType);
+exports.brandRoutes.get('/', prouduct_controller_1.productController.GetBrandType);
+exports.brandRoutes.get('/:id', prouduct_controller_1.productController.GetBrandTypeById);

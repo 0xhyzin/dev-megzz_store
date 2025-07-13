@@ -45,7 +45,7 @@ class UserRepository {
         this.AddNewUser = (newUser) => __awaiter(this, void 0, void 0, function* () {
             const repoHandler = new RepositoiesHandler_1.RepositoiesHandler();
             try {
-                logger_1.logger.info("Add User in Database", { userRole: process.env.USER_ROLE });
+                logger_1.logger.info("Add User in Database", { userRole: process.env.ADMIN_ROLE });
                 const user = yield data_1.prisma.user.create({
                     data: {
                         first_name: newUser.first_name,
@@ -55,7 +55,7 @@ class UserRepository {
                         hash_password: newUser.hash_password,
                         role: {
                             create: {
-                                roletype_id: process.env.USER_ROLE
+                                roletype_id: process.env.ADMIN_ROLE
                             }
                         },
                     }

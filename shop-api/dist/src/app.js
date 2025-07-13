@@ -36,6 +36,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.app = void 0;
 const express_1 = __importStar(require("express"));
 const user_route_1 = require("./presentation/routes/user.route");
+const brand_route_1 = require("./presentation/routes/brand.route");
 exports.app = (0, express_1.default)();
 exports.app.use((0, express_1.json)());
 exports.app.use('/api/user', user_route_1.userRouts);
+exports.app.use('/api/brand', brand_route_1.brandRoutes);
