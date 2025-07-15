@@ -123,7 +123,7 @@ class ProductTypeServices {
             producttype_id: product.producttype_id,
             name: (updateProduct === null) ? product.name : updateProduct.name,
             slug: updateProduct.slug,
-            image_url: imageUrl
+            image_url: (imageUrl === null) ? product.image_url : imageUrl
 
         }
 

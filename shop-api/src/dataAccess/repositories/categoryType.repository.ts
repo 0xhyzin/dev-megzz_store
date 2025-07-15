@@ -1,6 +1,6 @@
 import { logger } from "../../utils/logger";
 import { prisma } from "../database/data";
-import { CategoryTypeCreateInput } from "../models/product/categoryType-create.input copy 2"; 
+import { CategoryTypeCreateInput } from "../models/product/categoryType-create.input"; 
 import { categorytype } from "@prisma/client";
 import { RepositoiesHandler } from "../RepositoiesHandler";
 

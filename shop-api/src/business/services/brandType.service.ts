@@ -7,7 +7,7 @@ import { ServicesHandler } from "../ServicesHandler";
 import { RepositoiesHandler } from "../../dataAccess/RepositoiesHandler";
 import { brandtype } from "@prisma/client";
 import { brandTypeRepository } from "../../dataAccess/repositories/brand.repository";
-import { BrandTypeCreateInput } from "../../dataAccess/models/product/brandType-create.input copy"; 
+import { BrandTypeCreateInput } from "../../dataAccess/models/product/brandType-create.input"; 
 import { UpdateBrandTypeDto } from "../dtos/productDto/BrandType/UpdateBrandTypeDto";
 
 class BrandTypeServices {

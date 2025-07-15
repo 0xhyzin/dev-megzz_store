@@ -1,6 +1,6 @@
 import { logger } from "../../utils/logger";
 import { prisma } from "../database/data";
-import { BrandTypeCreateInput } from "../models/product/brandType-create.input copy";
+import { BrandTypeCreateInput } from "../models/product/brandType-create.input";
 import { brandtype } from "@prisma/client";
 import { RepositoiesHandler } from "../RepositoiesHandler";
 

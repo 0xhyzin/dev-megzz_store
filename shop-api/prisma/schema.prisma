@@ -58,7 +58,7 @@ model brandtype {
   brandtype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String    @db.VarChar(100)
   slug         String    @unique @db.VarChar(100)
-  image_url    String?    @db.VarChar(255)
+  image_url    String?   @db.VarChar(255)
   product      product[]
 }
 
@@ -86,15 +86,14 @@ model categorytype {
   categorytype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name            String    @db.VarChar(100)
   slug            String    @unique @db.VarChar(100)
-  image_url       String?    @db.VarChar(255)
+  image_url       String?   @db.VarChar(255)
   product         product[]
 }
 
 model color {
   color_id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String           @db.VarChar(50)
+  name           String           @unique @db.VarChar(50)
   slug           String           @unique @db.VarChar(50)
-  hexcode        String           @unique @db.VarChar(7)
   productvariant productvariant[]
 }
 
@@ -127,11 +126,11 @@ model discountcodeusage {
 }
 
 model image {
-  image_id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  url            String           @db.VarChar(255)
-  alttext        String?          @db.VarChar(255)
-  isprimary      Boolean?         @default(false)
-  productvariant productvariant[]
+  image_id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url               String         @unique @db.VarChar(255)
+  isprimary         Boolean?       @default(false)
+  productvariant_id String         @db.Uuid
+  productvariant    productvariant @relation(fields: [productvariant_id], references: [productvariant_id], onDelete: Cascade)
 }
 
 model invoice {
@@ -202,7 +201,7 @@ model producttype {
   producttype_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String    @db.VarChar(100)
   slug           String    @unique @db.VarChar(100)
-  image_url      String?    @db.VarChar(255)
+  image_url      String?   @db.VarChar(255)
   product        product[]
 }
 
@@ -213,14 +212,13 @@ model productvariant {
   stock             Int
   size_id           String      @db.Uuid
   color_id          String      @db.Uuid
-  image_id          String      @db.Uuid
   product_id        String      @db.Uuid
   cartitem          cartitem[]
   orderitem         orderitem[]
   color             color       @relation(fields: [color_id], references: [color_id], onUpdate: NoAction)
-  image             image       @relation(fields: [image_id], references: [image_id], onDelete: SetNull, onUpdate: NoAction)
   product           product     @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
   size              size        @relation(fields: [size_id], references: [size_id], onUpdate: NoAction)
+  images            image[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.

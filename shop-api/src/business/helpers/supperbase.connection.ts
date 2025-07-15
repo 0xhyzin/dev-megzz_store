@@ -32,3 +32,26 @@ export const DeleteImageInSupabase = async (imageUrl: string, bucketName: string
         .remove([GetImageName(imageUrl)[8]]);
 }
 
+export const ensureBucketExists = async (bucketName: string) => {
+
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+
+    if (error) {
+        logger.error('Failed to fetch buckets: ' + error.message);
+        return false;
+    }
+    return buckets.some((bucket) => bucket.name === bucketName);
+};
+
+export const createPublicBucket = async (bucketName: string) => {
+    const { error: createError } = await supabase.storage.createBucket(bucketName, {
+        public: true,
+    });
+
+    if (createError) {
+        logger.error('Bucket creation failed:', createError.message);
+        return;
+    }
+
+    console.log(`Bucket '${bucketName}' created and set to public`);
+};

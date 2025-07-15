@@ -157,7 +157,6 @@ class ProductServices {
 
         const products: ProductDto[] = theProducts.map(p => ({
             product_id: p.product_id!,
-            productId: p.producttype_id!,
             name: p.name!,
             slug: p.slug!,
             description: p.description!,

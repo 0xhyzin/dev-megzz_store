@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUserValidation = exports.ValidationLoginUser = void 0;
+exports.validateUpdateProductType = exports.validateAddProductType = exports.validateUpdateProduct = exports.validateAddProduct = exports.validateUpdateCategoryType = exports.validateAddCategoryType = exports.validateUpdateBrandType = exports.validateAddBrandType = exports.validateUpdateProductVariant = exports.validateAddProductVariant = exports.createUserValidation = exports.ValidationLoginUser = void 0;
 const express_validator_1 = require("express-validator");
 exports.ValidationLoginUser = [
     (0, express_validator_1.body)("email")
@@ -29,4 +29,59 @@ exports.createUserValidation = [
         .matches(/[@$!%*?&#]/).withMessage('Password must contain at least one special character'),
     (0, express_validator_1.body)('phone')
         .notEmpty().withMessage('Phone is required'),
+];
+exports.validateAddProductVariant = [
+    (0, express_validator_1.body)('product_id').notEmpty().withMessage('Product ID is required'),
+    (0, express_validator_1.body)('price').notEmpty().isNumeric().withMessage('Price must be a number'),
+    (0, express_validator_1.body)('stock').notEmpty().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+    (0, express_validator_1.body)('color_name').notEmpty().withMessage('Color name is required'),
+    (0, express_validator_1.body)('size_value').notEmpty().withMessage('Size value is required'),
+    // images: handled by multer, but can check req.files in controller if needed
+];
+exports.validateUpdateProductVariant = [
+    (0, express_validator_1.body)('product_id').notEmpty().withMessage('Product ID is required'),
+    (0, express_validator_1.body)('price').notEmpty().isNumeric().withMessage('Price must be a number'),
+    (0, express_validator_1.body)('stock').notEmpty().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+    (0, express_validator_1.body)('color_name').notEmpty().withMessage('Color name is required'),
+    (0, express_validator_1.body)('size_value').notEmpty().withMessage('Size value is required'),
+];
+exports.validateAddBrandType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Brand name is required'),
+    // image: handled by multer
+];
+exports.validateUpdateBrandType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Brand name is required'),
+    // image: handled by multer
+];
+exports.validateAddCategoryType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Category name is required'),
+    // image: handled by multer
+];
+exports.validateUpdateCategoryType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Category name is required'),
+    // image: handled by multer
+];
+exports.validateAddProduct = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Product name is required'),
+    (0, express_validator_1.body)('description').notEmpty().withMessage('Description is required'),
+    (0, express_validator_1.body)('isActive').notEmpty().isBoolean().withMessage('isActive must be boolean'),
+    (0, express_validator_1.body)('categorytypeId').notEmpty().withMessage('CategoryType ID is required'),
+    (0, express_validator_1.body)('brandtypeId').notEmpty().withMessage('BrandType ID is required'),
+    (0, express_validator_1.body)('producttypeId').notEmpty().withMessage('ProductType ID is required'),
+];
+exports.validateUpdateProduct = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('Product name is required'),
+    (0, express_validator_1.body)('description').notEmpty().withMessage('Description is required'),
+    (0, express_validator_1.body)('isActive').notEmpty().isBoolean().withMessage('isActive must be boolean'),
+    (0, express_validator_1.body)('categorytypeId').notEmpty().withMessage('CategoryType ID is required'),
+    (0, express_validator_1.body)('brandtypeId').notEmpty().withMessage('BrandType ID is required'),
+    (0, express_validator_1.body)('producttypeId').notEmpty().withMessage('ProductType ID is required'),
+];
+exports.validateAddProductType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('ProductType name is required'),
+    // image: handled by multer
+];
+exports.validateUpdateProductType = [
+    (0, express_validator_1.body)('name').notEmpty().withMessage('ProductType name is required'),
+    // image: handled by multer
 ];

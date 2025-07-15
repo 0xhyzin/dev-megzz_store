@@ -33,3 +33,68 @@ export const createUserValidation = [
     body('phone')
         .notEmpty().withMessage('Phone is required'),
 ];
+
+export const validateAddProductVariant = [
+    body('product_id').notEmpty().withMessage('Product ID is required'),
+    body('price').notEmpty().isNumeric().withMessage('Price must be a number'),
+    body('stock').notEmpty().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+    body('color_name').notEmpty().withMessage('Color name is required'),
+    body('size_value').notEmpty().withMessage('Size value is required'),
+    // images: handled by multer, but can check req.files in controller if needed
+];
+
+export const validateUpdateProductVariant = [
+    body('product_id').notEmpty().withMessage('Product ID is required'),
+    body('price').notEmpty().isNumeric().withMessage('Price must be a number'),
+    body('stock').notEmpty().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+    body('color_name').notEmpty().withMessage('Color name is required'),
+    body('size_value').notEmpty().withMessage('Size value is required'),
+];
+
+export const validateAddBrandType = [
+    body('name').notEmpty().withMessage('Brand name is required'),
+    // image: handled by multer
+];
+
+export const validateUpdateBrandType = [
+    body('name').notEmpty().withMessage('Brand name is required'),
+    // image: handled by multer
+];
+
+export const validateAddCategoryType = [
+    body('name').notEmpty().withMessage('Category name is required'),
+    // image: handled by multer
+];
+
+export const validateUpdateCategoryType = [
+    body('name').notEmpty().withMessage('Category name is required'),
+    // image: handled by multer
+];
+
+export const validateAddProduct = [
+    body('name').notEmpty().withMessage('Product name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('isActive').notEmpty().isBoolean().withMessage('isActive must be boolean'),
+    body('categorytypeId').notEmpty().withMessage('CategoryType ID is required'),
+    body('brandtypeId').notEmpty().withMessage('BrandType ID is required'),
+    body('producttypeId').notEmpty().withMessage('ProductType ID is required'),
+];
+
+export const validateUpdateProduct = [
+    body('name').notEmpty().withMessage('Product name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('isActive').notEmpty().isBoolean().withMessage('isActive must be boolean'),
+    body('categorytypeId').notEmpty().withMessage('CategoryType ID is required'),
+    body('brandtypeId').notEmpty().withMessage('BrandType ID is required'),
+    body('producttypeId').notEmpty().withMessage('ProductType ID is required'),
+];
+
+export const validateAddProductType = [
+    body('name').notEmpty().withMessage('ProductType name is required'),
+    // image: handled by multer
+];
+
+export const validateUpdateProductType = [
+    body('name').notEmpty().withMessage('ProductType name is required'),
+    // image: handled by multer
+];

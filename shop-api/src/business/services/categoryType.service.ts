@@ -7,7 +7,7 @@ import { ServicesHandler } from "../ServicesHandler";
 import { RepositoiesHandler } from "../../dataAccess/RepositoiesHandler";
 import { categorytype } from "@prisma/client";
 import { categoryTypeRepository } from "../../dataAccess/repositories/categoryType.repository";
-import { CategoryTypeCreateInput } from "../../dataAccess/models/product/categoryType-create.input copy 2";
+import { CategoryTypeCreateInput } from "../../dataAccess/models/product/categoryType-create.input";
 import { UpdateCategoryTypeDto } from "../dtos/productDto/CategoryType/UpdateCategoryTypeDto"; 
 
 class CategoryTypeServices {
