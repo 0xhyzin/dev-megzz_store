@@ -50,35 +50,35 @@ class ProductVariantController {
         res.status(200).send(servRespons.body)
     }
 
-    // public DeleteProductVariant = async (req: Request, res: Response) => {
-    //     const id = req.params.id;
+    public DeleteProductVariant = async (req: Request, res: Response) => {
+        const id = req.params.id;
 
-    //     const servRespons: ServicesHandler<ProductVariantDto | null> = await productVariantServices.DeleteProductVariant(id);
-    //     if (!servRespons.isSucceed) {
-    //         logger.error("login faild");
-    //         res.status(400).send({ message: servRespons.message });
-    //     }
-    //     res.status(200).send({ isSuccssfuly: servRespons.isSucceed, message: servRespons.message })
-    // }
+        const servRespons: ServicesHandler<boolean | null> = await productVariantServices.DeleteProductVariant(id);
+        if (!servRespons.isSucceed) {
+            logger.error("login faild");
+            res.status(400).send({ message: servRespons.message });
+        }
+        res.status(200).send({ isSuccssfuly: servRespons.isSucceed, message: "Deleted product variant Succssfuly" })
+    }
 
-    // public GetAllProductVariant = async (req: Request, res: Response) => {
+    public GetAllProductVariant = async (req: Request, res: Response) => {
 
-    //     const servRespons: ServicesHandler<ProductVariantDto[] | null> = await productVariantServices.GetAllProductVariant();
-    //     if (!servRespons.isSucceed) {
-    //         logger.error("login faild");
-    //         res.status(400).send({ message: servRespons.message });
-    //     }
-    //     res.status(200).send(servRespons.body)
-    // }
-    // public GetProductVariantById = async (req: Request, res: Response) => {
-    //     const id = req.params.id;
+        const servRespons: ServicesHandler<ProductVariantDto[] | null> = await productVariantServices.GetAllProductVariant();
+        if (!servRespons.isSucceed) {
+            logger.error("login faild");
+            res.status(400).send({ message: servRespons.message });
+        }
+        res.status(200).send(servRespons.body)
+    }
+    public GetProductVariantById = async (req: Request, res: Response) => {
+        const id = req.params.id;
 
-    //     const servRespons: ServicesHandler<ProductVariantDto | ProductVariantDto[] | null> = await productVariantServices.GetProductVariantById(id)
-    //     if (!servRespons.isSucceed) {
-    //         logger.error("login faild");
-    //         res.status(400).send({ message: servRespons.message });
-    //     }
-    //     res.status(200).send(servRespons.body)
-    // }
+        const servRespons: ServicesHandler<ProductVariantDto | ProductVariantDto[] | null> = await productVariantServices.GetProductVariantById(id)
+        if (!servRespons.isSucceed) {
+            logger.error("login faild");
+            res.status(400).send({ message: servRespons.message });
+        }
+        res.status(200).send(servRespons.body)
+    }
 }
 export const productVariantController: ProductVariantController = new ProductVariantController(); 

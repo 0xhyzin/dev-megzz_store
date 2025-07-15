@@ -147,6 +147,11 @@ class ProductVariantRepository {
                         select: {
                             name: true
                         }
+                    },
+                    images:{
+                        select:{
+                            url:true
+                        }
                     }
                 }
             });
@@ -187,7 +192,8 @@ class ProductVariantRepository {
                 include: {
                     color: { select: { name: true } },
                     size: { select: { value: true } },
-                    product: { select: { name: true } }
+                    product: { select: { name: true } },
+                    images: { select: { url: true } }
                 }
             });
             return productVariant;
@@ -210,7 +216,8 @@ class ProductVariantRepository {
                 include: {
                     color: { select: { name: true } },
                     size: { select: { value: true } },
-                    product: { select: { name: true } }
+                    product: { select: { name: true } },
+                    images: { select: { url: true } }
                 }
             });
             return productVariant;
@@ -219,8 +226,35 @@ class ProductVariantRepository {
         }
         return null;
     }
-    public DeleteProductVariantFromDatabase = async (variantId: string) => { };
-    public GetProductVariants = async () => { };
+    public DeleteProductVariantFromDatabase = async (variantId: string) => {
+        try {
+            const deleted = await prisma.productvariant.delete({
+                where: { productvariant_id: variantId }
+            });
+            logger.info("Deleted product variant from database", { productvariant_id: variantId });
+            return true;
+        } catch (er) {
+            logger.error("Failed to delete product variant from database", { error: er, roductvariant_id: variantId });
+            return false;
+        }
+    };
+    public GetProductVariants = async () => {
+        try {
+            const productVariants: ProductVariantWithRelations[] = await prisma.productvariant.findMany({
+                include: {
+                    color: { select: { name: true } },
+                    size: { select: { value: true } },
+                    product: { select: { name: true } },
+                    images:{select:{url:true}}
+                }
+            });
+            logger.info("Fetched all product variants", { count: productVariants.length });
+            return productVariants;
+        } catch (er) {
+            logger.error("error when get all ProductVariants", { error: er });
+            return [];
+        }
+    }
     public DeleteImageFromDatabase = async (imageUrl: string) => {
         try {
             const deleted = await prisma.image.delete({

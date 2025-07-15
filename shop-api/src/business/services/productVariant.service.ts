@@ -240,14 +240,14 @@ class ProductVariantService {
         const bucketName = slugify(theProduct.name, { lower: true });
         logger.info("Update images: delete old and add new");
         for (let img of images_url || []) {
-            logger.info("Delete ",{images_url:img.url});
-            logger.info("Delete ",{images_url:img.url});
-            logger.info("Delete ",{images_url:img.url});
-            logger.info("Delete ",{images_url:img.url});
-            logger.info("Delete ",{images_url:img.url});
+            logger.info("Delete ", { images_url: img.url });
+            logger.info("Delete ", { images_url: img.url });
+            logger.info("Delete ", { images_url: img.url });
+            logger.info("Delete ", { images_url: img.url });
+            logger.info("Delete ", { images_url: img.url });
 
             let data = await DeleteImageInSupabase(img.url, bucketName)
-            let isDeleteFromDatabase =await productVariantRepository.DeleteImageFromDatabase(img.url)
+            let isDeleteFromDatabase = await productVariantRepository.DeleteImageFromDatabase(img.url)
             if (data.error || !isDeleteFromDatabase) {
                 servHandler = {
                     body: null,
@@ -306,8 +306,118 @@ class ProductVariantService {
         return servHandler;
     }
 
-    public DeleteProductVariant = async (id: string) => { };
-    public GetAllProductVariant = async () => { };
-    public GetProductVariantById = async (id: string) => { };
+    public DeleteProductVariant = async (id: string) => {
+        let servHandler: ServicesHandler<boolean | null> = new ServicesHandler();
+        logger.info("Try update Product variant in product services");
+
+        logger.info("Fetch existing product variant by id");
+        const productVariant: any = await productVariantRepository.GetProductVariantById(id);
+        if (!productVariant) {
+            logger.error("Not Found", { message: "Product Variant Not Found" })
+            servHandler.body = null;
+            servHandler.isSucceed = false;
+            servHandler.message = "Product Variant Not Found";
+            return servHandler;
+        }
+
+        logger.info("Fetch product for bucket name");
+        const theProduct: product | null = await productVariantRepository.GetProductById(productVariant.product_id);
+        if (theProduct === null) {
+            logger.error("Not Found", { message: "Product Not Found" })
+            servHandler.body = null;
+            servHandler.isSucceed = false;
+            servHandler.message = "Product Not Found";
+            return servHandler;
+        }
+
+
+
+        let images_url = await productVariantRepository.GetProductImages(productVariant.productvariant_id);
+        const bucketName = slugify(theProduct.name, { lower: true });
+        logger.info("Update images: delete old and add new");
+        for (let img of images_url!) {
+            logger.info("Delete ", { images_url: img.url });
+
+            let data = await DeleteImageInSupabase(img.url, bucketName)
+            let isDeleteFromDatabase = await productVariantRepository.DeleteImageFromDatabase(img.url)
+            if (data.error || !isDeleteFromDatabase) {
+                servHandler = {
+                    body: null,
+                    isSucceed: false,
+                    message: "Failed to upload image",
+                    refreshToken: null
+                }
+                return servHandler;
+            }
+        }
+        const isProductVariantDelete: boolean = await productVariantRepository.DeleteProductVariantFromDatabase(id);
+
+        if (!isProductVariantDelete) {
+            logger.error("Failed to delete product variant")
+            servHandler.body = null;
+            servHandler.isSucceed = false;
+            servHandler.message = "Failed to delete product variant";
+            return servHandler;
+        }
+        logger.info("Deleted product variant Succssfuly")
+        servHandler.body = true;
+        servHandler.isSucceed = true;
+        servHandler.message = "Deleted product variant Succssfuly";
+        return servHandler;
+    };
+    public GetAllProductVariant = async () => {
+        let servHandler: ServicesHandler<ProductVariantDto[] | null> = new ServicesHandler();
+        logger.info("Try get all Product variants in product services");
+        const productVariants = await productVariantRepository.GetProductVariants();
+        if (!productVariants || productVariants.length === 0) {
+            logger.error("No Product Variants Found");
+            servHandler.body = null;
+            servHandler.isSucceed = false;
+            servHandler.message = "No Product Variants Found";
+            return servHandler;
+        }
+        const productVariantDtos: ProductVariantDto[] = productVariants.map((variant) => ({
+            productvariant_id: variant.productvariant_id,
+            product_id: variant.product_id,
+            color: variant.color.name,
+            size: variant.size.value,
+            price: variant.price.toString(),
+            stock: variant.stock,
+            imagesUrl: (variant.images).map((i) => ({ url: i.url })),
+        }));
+        servHandler.body = productVariantDtos;
+        servHandler.isSucceed = true;
+        servHandler.message = "Product Variants fetched successfully";
+        return servHandler;
+    }
+    public GetProductVariantById = async (id: string) => {
+        let servHandler: ServicesHandler<ProductVariantDto | null> = new ServicesHandler();
+        logger.info("Try get Product variant by id in product services", { id });
+        const variant = await productVariantRepository.GetProductVariantById(id);
+        if (!variant) {
+            logger.error("Product Variant Not Found", { id });
+            servHandler.body = null;
+            servHandler.isSucceed = false;
+            servHandler.message = "Product Variant Not Found";
+            return servHandler;
+        }
+        const productVariantDto: ProductVariantDto = {
+            productvariant_id: variant.productvariant_id,
+            product_id: variant.product_id,
+            color: variant.color.name,
+            size: variant.size.value,
+            price: variant.price.toString(),
+            stock: variant.stock,
+            imagesUrl: (variant.images).map((i: { url: string }) => ({ url: i.url })),
+        };
+        servHandler.body = productVariantDto;
+        servHandler.isSucceed = true;
+        servHandler.message = "Product Variant fetched successfully";
+        return servHandler;
+    }
+    public getAllCardPoduct = async () => {
+
+    }
+
 }
 export const productVariantServices: ProductVariantService = new ProductVariantService(); 

@@ -16,6 +16,11 @@ export const productVariantWithIncludes = Prisma.validator<Prisma.productvariant
             select: {
                 name: true
             }
+        },
+        images: {
+            select: {
+                url: true
+            }
         }
     }
 });
